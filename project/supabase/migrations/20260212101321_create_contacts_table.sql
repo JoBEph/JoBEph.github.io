@@ -1,0 +1,39 @@
+/*
+  # Create contacts table for landing page
+
+  1. New Tables
+    - `contacts`
+      - `id` (uuid, primary key)
+      - `email` (text, unique)
+      - `full_name` (text)
+      - `organization` (text)
+      - `message` (text)
+      - `created_at` (timestamp)
+
+  2. Security
+    - Enable RLS on `contacts` table
+    - Add policy to allow inserts for public contact form submissions
+*/
+
+CREATE TABLE IF NOT EXISTS contacts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL,
+  full_name text NOT NULL,
+  organization text NOT NULL,
+  message text NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public contact form submissions"
+  ON contacts
+  FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Allow only read for authenticated users"
+  ON contacts
+  FOR SELECT
+  TO authenticated
+  USING (false);
