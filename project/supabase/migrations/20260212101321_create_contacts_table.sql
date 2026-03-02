@@ -30,7 +30,15 @@ CREATE POLICY "Allow public contact form submissions"
   ON contacts
   FOR INSERT
   TO anon, authenticated
-  WITH CHECK (true);
+  WITH CHECK (
+    email IS NOT NULL 
+    AND email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+    AND full_name IS NOT NULL 
+    AND char_length(full_name) > 0
+    AND message IS NOT NULL 
+    AND char_length(message) > 0
+    AND char_length(message) <= 2000
+  );
 
 CREATE POLICY "Allow only read for authenticated users"
   ON contacts
