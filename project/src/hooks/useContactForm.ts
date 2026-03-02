@@ -22,6 +22,7 @@ export const useContactForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ContactForm, string>>>({});
+  const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
 
   const validateForm = (form: ContactForm) => {
     const errors: Partial<Record<keyof ContactForm, string>> = {};
@@ -53,8 +54,18 @@ export const useContactForm = () => {
     e.preventDefault();
     setSubmitMessage('');
 
+    // Honeypot protection
     if (contactForm.website.trim()) {
       setSubmitMessage('Erreur lors de l\'envoi. Réessayez plus tard.');
+      return;
+    }
+
+    // Rate limiting: minimum 30 secondes entre les soumissions
+    const now = Date.now();
+    const timeSinceLastSubmit = now - lastSubmitTime;
+    if (timeSinceLastSubmit < 30000) {
+      const waitTime = Math.ceil((30000 - timeSinceLastSubmit) / 1000);
+      setSubmitMessage(`Veuillez patienter ${waitTime} secondes avant de soumettre à nouveau.`);
       return;
     }
 
@@ -78,6 +89,7 @@ export const useContactForm = () => {
 
       if (error) throw error;
 
+      setLastSubmitTime(Date.now());
       setSubmitMessage('Merci pour votre message! Je vous répondrai bientôt.');
       setContactForm({ email: '', fullName: '', organization: '', message: '', website: '' });
       setTimeout(() => setSubmitMessage(''), 3000);

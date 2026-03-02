@@ -33,11 +33,13 @@ CREATE POLICY "Allow public contact form submissions"
   WITH CHECK (
     email IS NOT NULL 
     AND email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+    AND char_length(email) <= 120
     AND full_name IS NOT NULL 
-    AND char_length(full_name) > 0
+    AND char_length(full_name) BETWEEN 2 AND 80
+    AND organization IS NOT NULL
+    AND char_length(organization) BETWEEN 2 AND 120
     AND message IS NOT NULL 
-    AND char_length(message) > 0
-    AND char_length(message) <= 2000
+    AND char_length(message) BETWEEN 10 AND 1200
   );
 
 CREATE POLICY "Allow only read for authenticated users"
